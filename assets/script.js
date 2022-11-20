@@ -1,28 +1,16 @@
 // save reference to important DOM elements
 var currentDateElement = $('#currentDay');
 var timeBlockElements = $('.time-block');
+var saveButtonElements = $('.saveBtn');
 
-
-// handle displaying the time
-
-
-
-// handle project form submission
-
-
-// Wrap all code that interacts with the DOM in a call to jQuery to ensure that
-// the code isn't run until the browser has finished rendering all the elements
-// in the html.
 $(function () {
   var currentTime = Number(dayjs().format('H'));
-
-  // TODO: Add a listener for click events on the save button. This code should
-  // use the id in the containing time-block as a key to save the user input in
-  // local storage. HINT: What does `this` reference in the click listener
-  // function? How can DOM traversal be used to get the "hour-x" id of the
-  // time-block containing the button that was clicked? How might the id be
-  // useful when saving the description in local storage?
+  var timeBlockInt;
+  var todayLocalStorage = dayjs().format('M/D/YYYY');
+  localStorage.setItem('date', todayLocalStorage); 
+  // localStorage.setItem('date', "11/18 / 2022"); // uncomment to test that agenda clears when its not the current date
   
+  // update time blocks to CSS styling of past, present, and future
   for (let i = 0; i < timeBlockElements.length; i++) {
     // converting timeBlockElements[i].id to number for a strict comparison to current time
     timeBlockInt = Number(timeBlockElements[i].id);
@@ -34,13 +22,42 @@ $(function () {
       timeBlockElements[i].classList.add('present');
     }
   }
+
+  // save inputted events to local storage
+  saveButtonElements.click(function () {
+    var item = $(this)
+    var id = item.parent().attr('id');
+    var eventInput = item.siblings('.description').val();
+    localStorage.setItem(id, eventInput);
+  })
   
+  // check if localStorage is populated, if so, add it to agenda
+  if (localStorage) {
+    var savedEventTimeBlockId;
+    var savedEventText;
+    var textArea = $('.description')
+    
+    
+    for (var i = 0, len = localStorage.length; i < len; ++i) {
+      console.log(localStorage.key(i))
+      savedEventTimeBlockId = localStorage.key(i);
+      savedEventText = localStorage.getItem(savedEventTimeBlockId);
 
-  // TODO: Add code to get any user input that was saved in localStorage and set
-  // the values of the corresponding textarea elements. HINT: How can the id
-  // attribute of each time-block be used to do this?
+      if (localStorage.key(i) === "date") {
+        if (localStorage.getItem(savedEventTimeBlockId) != todayLocalStorage) { // rename variable
+          localStorage.clear();
+        } 
+      }
 
-  // TODO: Add code to display the current date in the header of the page.
-  var today = dayjs().format('M/D/YYYY h:mm A');
-  currentDateElement.text(today);
+      for (let i = 0; i < timeBlockElements.length; i++) {
+        // setting saved events to appropriate time blocks
+        if (savedEventTimeBlockId === timeBlockElements[i].id) {
+          textArea[i].value = savedEventText;
+        }
+      }
+    }
+  }
+
+  var todayDisplay = dayjs().format('M/D/YYYY h:mm A');
+  currentDateElement.text(todayDisplay);
 });
